@@ -57,7 +57,7 @@ def getXY(test, proteinSeq, structureSeq, uniquepro):# what this mean
 		elif test == 1:
 			# print trainX
 			prediction = structype[sess.run(predict, feed_dict={X:x})[0]]
-			print('Prediction: ' + str(prediction))
+			# print 'Prediction: ' + str(prediction)
 			# print 'Actual: ' + str(structureSeq[i])
 			predictstruc.append(prediction)
 			if prediction == structureSeq[i]:
@@ -126,6 +126,7 @@ with tf.Session() as sess:
 	eproteinLists, estructureLists = getpro(testfilename) # load protein sequences from file
 	for j in range(len(eproteinLists)):
 		print('Sequence ' + str(j+1))
+		print(type(eproteinLists[j]))
 		a, t, predictstruc = getXY(test, eproteinLists[j], estructureLists[j], uniquepro)
 		a += a
 		t += t

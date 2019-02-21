@@ -43,7 +43,7 @@ def countpro(X): # count number of unique protein （how many different characte
 				uniquepro.append(char)
 	return uniquepro
 
-def getXY(test, proteinSeq, structureSeq, uniquepro):# what this mean
+def getXY(test, proteinSeq, uniquepro):# what this mean
 	a = 0.0
 	predictstruc = []
 	newstrlen = len(proteinSeq) + (windowLen//2) * 2 # windowLen = 13 窗口
@@ -51,35 +51,27 @@ def getXY(test, proteinSeq, structureSeq, uniquepro):# what this mean
 	newstr[windowLen//2:len(proteinSeq)+windowLen//2] = proteinSeq #len(proteinSeq) = 91
 	for i in range(len(proteinSeq)):
 		trainX = newstr[i:windowLen+i]
-		x, y = protonum(trainX, structureSeq[i], uniquepro)
+		x = protonum(trainX, uniquepro)
 		if test == 0:
 			sess.run(train_op, feed_dict={X:x, Y:y})
 		elif test == 1:
 			# print trainX
 			prediction = structype[sess.run(predict, feed_dict={X:x})[0]]
-			# print 'Prediction: ' + str(prediction)
+			# print('Prediction: ' + str(prediction))
 			# print 'Actual: ' + str(structureSeq[i])
 			predictstruc.append(prediction)
-			if prediction == structureSeq[i]:
-				a += 1
-	return a, len(proteinSeq), predictstruc
+	return predictstruc
 
-def protonum(trainX, trainY, uniquepro):
+def protonum(trainX, uniquepro):
 	num = [None]* windowLen
 	stype = [None]* windowLen
 	for i in range(len(uniquepro)):
 		for j in range(windowLen):
 			if trainX[j] == uniquepro[i]:
 				num[j] = i
-	for k in range(strucTypes):
-		if trainY == structype[k]:
-			stype = k
 	num = np.array(num)
 	num = num.reshape([1,windowLen])
-	stype = np.array(stype)
-	stype = stype.reshape([1,1])
-
-	return num, stype
+	return num
 
 """feed forward net"""
 # one-hot input for each amino acid
@@ -124,12 +116,15 @@ with tf.Session() as sess:
 	test = 1
 	print('Testing...')
 	eproteinLists, estructureLists = getpro(testfilename) # load protein sequences from file
-	for j in range(len(eproteinLists)):
-		print('Sequence ' + str(j+1))
-		a, t, predictstruc = getXY(test, eproteinLists[j], estructureLists[j], uniquepro)
-		a += a
-		t += t
-		print('Protein:    ' + eproteinLists[j])
-		print('Actual:     ' + str(estructureLists[j]))
-		print('Prediction: ' + str(''.join(predictstruc)))
-	print('Accuracy: ' + str(a/t*100) + '%')
+
+	RNA_seq = input("Please input a RNA sequence: ")
+	predictstruc = getXY(test, RNA_seq, uniquepro)
+	# for j in range(len(eproteinLists)):
+	# 	print('Sequence ' + str(j+1))
+	# 	a, t, predictstruc = getXY(test, eproteinLists[j], estructureLists[j], uniquepro)
+	# 	a += a
+	# 	t += t
+	# 	print('Protein:    ' + RNA_seq)
+	# 	print('Actual:     ' + str(estructureLists[j]))
+	print('Prediction: ' + str(''.join(predictstruc)))
+	# print('Accuracy: ' + str(a/t*100) + '%')
