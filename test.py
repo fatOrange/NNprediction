@@ -154,4 +154,4 @@ with tf.Session() as sess:
 		print('Prediction: ' + str(''.join(predictstruc)))
 	print('Accuracy: ' + str(sum_a/sum_t*100) + '%')
 	print('Sensitivity：'+ str(sum_TP/(sum_TP+sum_FN)*100) + '%')
-	print('PPN:' + str(sum_TP/(sum_TP+sum_FP)*100) + '%')
+	print('PPV:' + str(sum_TP/(sum_TP+sum_FP)*100) + '%')
