@@ -45,6 +45,11 @@ def countpro(X): # count number of unique protein （how many different characte
 
 def getXY(test, proteinSeq, structureSeq, uniquepro):# what this mean
 	a = 0.0
+	TP = 0.0 # ture positive
+	FN = 0.0 # False negative
+	FP = 0.0 # False positive
+	TN = 0.0 # Ture negative
+
 	predictstruc = []
 	newstrlen = len(proteinSeq) + (windowLen//2) * 2 # windowLen = 13 窗口
 	newstr = ['-'] * newstrlen
@@ -62,7 +67,15 @@ def getXY(test, proteinSeq, structureSeq, uniquepro):# what this mean
 			predictstruc.append(prediction)
 			if prediction == structureSeq[i]:
 				a += 1
-	return a, len(proteinSeq), predictstruc
+			if (prediction != '.' and structureSeq[i]!='.'):
+				TP += 1
+			elif (prediction !='.' and structureSeq[i] =='.'):
+				FP += 1
+			elif (prediction == '.' and structureSeq[i]!='.'):
+				FN += 1
+			elif (prediction == '.' and structureSeq[i] == '.'):
+				TN += 1
+	return TP,FP,FN,TN,a, len(proteinSeq), predictstruc
 
 def protonum(trainX, trainY, uniquepro):
 	num = [None]* windowLen
@@ -78,7 +91,6 @@ def protonum(trainX, trainY, uniquepro):
 	num = num.reshape([1,windowLen])
 	stype = np.array(stype)
 	stype = stype.reshape([1,1])
-
 	return num, stype
 
 """feed forward net"""
@@ -119,18 +131,27 @@ with tf.Session() as sess:
 	save_path = saver.restore(sess, "./model/my_test_model2")
 	print("Model saved in path: %s" % save_path)
 	# test
-	a = 0.0  # for calculating accuracy
-	t = 0.0
+	sum_a = 0.0  # for calculating accuracy
+	sum_t = 0.0
+	sum_TP = 0.0 # ture positive
+	sum_FN = 0.0 # False negative
+	sum_FP = 0.0 # False positive
+	sum_TN = 0.0 # Ture negative
 	test = 1
 	print('Testing...')
 	eproteinLists, estructureLists = getpro(testfilename) # load protein sequences from file
 	for j in range(len(eproteinLists)):
 		print('Sequence ' + str(j+1))
-		print(type(eproteinLists[j]))
-		a, t, predictstruc = getXY(test, eproteinLists[j], estructureLists[j], uniquepro)
-		a += a
-		t += t
+		TP,FP,FN,TN,a, t, predictstruc = getXY(test, eproteinLists[j], estructureLists[j], uniquepro)
+		sum_a += a
+		sum_t += t
+		sum_TP += TP
+		sum_FN += FN
+		sum_FP += FP
+		sum_TN += TN
 		print('Protein:    ' + eproteinLists[j])
 		print('Actual:     ' + str(estructureLists[j]))
 		print('Prediction: ' + str(''.join(predictstruc)))
-	print('Accuracy: ' + str(a/t*100) + '%')
+	print('Accuracy: ' + str(sum_a/sum_t*100) + '%')
+	print('Sensitivity：'+ str(sum_TP/(sum_TP+sum_FN)*100) + '%')
+	print('PPN:' + str(sum_TP/(sum_TP+sum_FP)*100) + '%')

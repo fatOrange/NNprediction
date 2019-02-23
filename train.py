@@ -13,7 +13,7 @@ hiddenNeuron = 2000
 trainfilename = 'RNA_structure.train'
 testfilename = 'RNA_structure.test'
 structype = ['.', '[', ']','(',')']
-epoch = 1 # 周期
+epoch = 10 # 周期
 
 def getpro(filename): # get protein sequences from file
 	proSeq = []
@@ -119,7 +119,10 @@ with tf.Session() as sess:
 		print('Training epoch ' + str(r+1))
 		for j in range(len(proteinLists)):
 			print ('Sequence ' + str(j+1))
-			_, _, _ = getXY(test, proteinLists[j], structureLists[j], uniquepro)
+			try:
+				_, _, _ = getXY(test, proteinLists[j], structureLists[j], uniquepro)
+			except ValueError:
+				print("Value ERROR trainX is "+str(proteinLists[j]))
 	print('Training done.')
 	save_path = saver.save(sess, "./model/my_test_model2")
 	print("Model saved in path: %s" % save_path)
